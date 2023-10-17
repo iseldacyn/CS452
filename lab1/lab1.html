@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+			<title>Lab 1 Assignment</title>
+
+			<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+			<script type="text/javascript" src="../Common/initShaders.js"></script>
+			<script type="text/javascript" src="../Common/MV.js"></script>
+
+			<script type="text/javascript" src="./lab1.js"></script>
+
+			<script type="x-shader/x-vertex" id="vertex-shader1">
+
+				attribute vec4 myPosition;
+				void main()
+				{
+					gl_Position = myPosition;
+					gl_PointSize = 1.0;
+				}
+
+			</script>
+			<script type="x-shader/x-fragment" id="fragment-shader1">
+				void main()
+				{
+					gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 );
+				}
+			</script>
+
+			<script type="x-shader/x-vertex" id="vertex-shader2">
+
+				attribute vec4 myPosition;
+				void main()
+				{
+					gl_Position = myPosition;
+					gl_PointSize = 1.0;
+				}
+
+			</script>
+			<script type="x-shader/x-fragment" id="fragment-shader2">
+				void main()
+				{
+					gl_FragColor = vec4( 1.0, 0.5, 1.0, 1.0 );
+				}
+			</script>
+
+			<script type="x-shader/x-vertex" id="vertex-shader3">
+
+				attribute vec4 myPosition;
+				void main()
+				{
+					gl_Position = myPosition;
+					gl_PointSize = 1.0;
+				}
+
+			</script>
+			<script type="x-shader/x-fragment" id="fragment-shader3">
+				void main()
+				{
+					gl_FragColor = vec4( 1.0, 1.0, 0.0, 1.0 );
+				}
+			</script>
+
+	</head>
+
+	<body onload="init();">
+
+		<h1>Lab 1 CS452</h1>
+		<h2>Create 3 Shapes</h2>
+		<canvas id="gl-canvas" width="512" height="512">
+		</canvas>
+		<p>Created by Iselda Aiello</p>
+	</body>
+</html>
