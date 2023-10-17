@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+            <title>2D Shapes</title>
+            <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+            <script type="text/javascript" src="../Common/initShaders.js"></script>
+            <script type="text/javascript" src="../Common/MV.js"></script>
+            <script type="text/javascript" src="TransformingSquare.js"></script>
+            
+            <script type="x-shader/x-vertex" id="vertex-shader-square">
+                attribute vec4 myPosition;
+                uniform mat3 M;
+				uniform mat3 Ms;
+				uniform mat3 Mt;
+                void main() {
+                    
+                    float xi = myPosition.x;
+                    float yi = myPosition.y;
+					float wi = 1.0;
+                    
+ 					//mat2 M = mat2( cos(theta), -sin(theta), sin(theta), cos(theta) );
+					vec3 vi = vec3( xi, yi, wi );
+					//vec2 vf = M * vi;
+					//vec2 vf = Ms * vi;
+					vec3 vf = Mt * Ms * vi;
+
+					float xf = vf.x;
+					float yf = vf.y;
+					float wf = vf[2];
+
+                    gl_Position.x = xf;
+                    gl_Position.y = yf;
+                    gl_Position.z = 0.0;
+                    gl_Position.w = wf;
+                    
+                    gl_PointSize = 1.0;
+                }
+                </script>
+            
+            <script type="x-shader/x-fragment" id="fragment-shader-square">
+                void main() {
+                    gl_FragColor = vec4( 0.0, 1.0, .0, 1.0 );
+                }
+            </script>
+    </head>
+    
+    <body onload="init()">
+        <canvas width="512" height="512" id="gl-canvas"></canvas>
+        <button id="stopStartButton" onclick="stopStartAnim()">Stop/Start Anim</button>
+    </body>
+</html>
+
