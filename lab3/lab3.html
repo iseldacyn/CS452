@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+		<title>Lab 3 Assignment</title>
+		<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+		<script type="text/javascript" src="../Common/initShaders.js"></script>
+		<script type="text/javascript" src="../Common/MV.js"></script>
+		<script type="text/javascript" src="lab3.js"></script>
+		
+		<script id="vertex-shader" type="x-shader/x-vertex">
+			attribute vec4 myPosition;
+			attribute vec4 myColor;
+			varying vec4 vColor;
+			uniform mat4 Mrx;
+			uniform mat4 Mry;
+			uniform mat4 Mrz;
+			uniform mat4 Mt;
+			uniform mat4 Ms;
+			void main()
+			{
+				gl_Position = Mt * Ms * Mrz * Mry * Mrx * myPosition;
+				vColor = myColor;
+			}
+		</script>
+		
+		<script id="fragment-shader" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec4 vColor;
+			void main()
+			{
+				gl_FragColor = vColor;
+			}
+		</script>
+    </head>
+    
+    <body onload = "init()" onkeypress="moveShapeKeys(event)">
+        <canvas id="gl-canvas" width="512" height="512"></canvas><br/>
+		<button id="reset-button" onclick="reset()">Reset</button>
+		<h1>CS452 Lab 3</h1>
+		<p>To operate, use xyz to rotate along the X, Y, and Z axes respectively</p>
+		<p>Use wasd to move the shape along the XY axes</p>
+		<p>Use Mm to scale up/down along the X axis and Nn to scale up/down the Y axis</p>
+    </body>
+</html>
