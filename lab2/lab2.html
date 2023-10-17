@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		<title>Lab 2 Assignment</title>
+		<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+		<script type="text/javascript" src="../Common/initShaders.js"></script>
+		<script type="text/javascript" src="../Common/MV.js"></script>
+		<script type="text/javascript" src="lab2.js"></script>
+
+		<script type="x-shader/x-vertex" id="vertex-shader">
+			attribute vec4 myPosition;
+			uniform vec2 mousePosition;
+			uniform mat3 Mr;
+			uniform mat3 Mt;
+			void main()
+			{
+				float xi = myPosition.x;
+				float yi = myPosition.y;
+				float wi = 1.0;
+
+				vec3 vi = vec3( xi, yi, wi );
+				vec3 vf = Mt * Mr * vi;
+
+				float xf = vf.x + mousePosition.x;
+				float yf = vf.y + mousePosition.y;
+				float wf = vf[2];
+
+				gl_Position.x = xf;
+				gl_Position.y = yf;
+				gl_Position.z = .0;
+				gl_Position.w = wf;
+				
+				gl_PointSize = 1.0;
+			}
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragment-shader">
+			void main()
+			{
+				gl_FragColor = vec4( .99, .99, .59, 1.0 );
+			}
+		</script>
+	</head>
+
+	<body style="margin: 0;" onload="init()" onkeypress="moveShapeKeys(event)">
+		<canvas width="512" height="512" id="gl-canvas" onclick="moveShape(event)"></canvas>
+		<br>
+		<button id="decButton" onclick="velocity(false)">Decrease</button>
+		<button id="incButton" onclick="velocity(true)">Increase</button>
+		<button id="rotateGo" onclick="rotate(true)">Start Rotation</button>
+		<button id="rotateStop" onclick="rotate(false)">Stop Rotation</button>
+		<h1>CS452 Lab 2</h1>
+		<p>To operate, use wasd to move the polygon, or click to bring it to your desired location. Increase/Decrease the speed and start/stop the polygons rotation with the corresponding buttons.</p>
+		<p>Created by Iselda Aiello</p>
+	</body>
+</html>
