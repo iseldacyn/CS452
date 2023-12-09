@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+		<title>Lab 5 Assignment</title>
+		<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+		<script type="text/javascript" src="../Common/initShaders.js"></script>
+		<script type="text/javascript" src="../Common/MV.js"></script>
+		<script type="text/javascript" src="lab5.js"></script>
+		
+		<script id="vertex-shader-tri" type="x-shader/x-vertex">
+			attribute vec4 vertexPositionTri;
+			attribute vec2 textureCoordinateTri;
+			varying vec2 fTextureCoordinateTri;
+
+			uniform mat4 MrxTri;
+			uniform mat4 MryTri;
+			uniform mat4 MrzTri;
+			uniform mat4 MtTri;
+			uniform mat4 MsTri;
+			void main()
+			{
+				float left = -.5;
+				float right = .5;
+				float top = .5;
+				float bottom = -.5;
+				float near = .3;
+				float far = 20.0;
+				mat4 Pp = mat4( near/right, .0, .0, .0,
+								.0, near/top, .0, .0,
+								.0, .0, -(near+far)/(far-near), -1.0,
+								.0, .0, -2.0*near*far/(far-near), .0);
+
+				mat4 Po = mat4( 0.4, 0, 0, 0,
+								0, 0.4, 0, 0,
+								0, 0, -0.4, 0,
+								0, 0, 0, 1);
+				gl_Position = Po * MtTri * MsTri * MrzTri * MryTri * MrxTri * vertexPositionTri;
+				fTextureCoordinateTri = textureCoordinateTri;
+			}
+		</script>
+
+		<script id="vertex-shader-sq" type="x-shader/x-vertex">
+			attribute vec4 vertexPositionSq;
+			attribute vec2 textureCoordinateSq;
+			varying vec2 fTextureCoordinateSq;
+
+			uniform mat4 MrxSq;
+			uniform mat4 MrySq;
+			uniform mat4 MrzSq;
+			uniform mat4 MtSq;
+			uniform mat4 MsSq;
+			void main()
+			{
+				float left = -.5;
+				float right = .5;
+				float top = .5;
+				float bottom = -.5;
+				float near = .3;
+				float far = 20.0;
+				mat4 Pp = mat4( near/right, .0, .0, .0,
+								.0, near/top, .0, .0,
+								.0, .0, -(near+far)/(far-near), -1.0,
+								.0, .0, -2.0*near*far/(far-near), .0);
+
+				mat4 Po = mat4( 0.4, 0, 0, 0,
+								0, 0.4, 0, 0,
+								0, 0, -0.4, 0,
+								0, 0, 0, 1);
+				gl_Position = Po * MtSq * MsSq * MrzSq * MrySq * MrxSq * vertexPositionSq;
+				fTextureCoordinateSq = textureCoordinateSq;
+			}
+		</script>
+		
+		<script id="fragment-shader-tri" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec2 fTextureCoordinateTri;
+			uniform sampler2D texMap0;
+			void main()
+			{
+				gl_FragColor = texture2D( texMap0, fTextureCoordinateTri );
+			}
+		</script>
+
+		<script id="fragment-shader-sq" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec2 fTextureCoordinateSq;
+			uniform sampler2D texMap1;
+			void main()
+			{
+				gl_FragColor = texture2D( texMap1, fTextureCoordinateSq );
+			}
+		</script>
+    </head>
+    
+    <body onload = "init();">
+        <canvas id="gl-canvas" width="768" height="768"></canvas><br/>
+		<button id="reset-button" onclick="reset()">Reset</button>
+		<h1>CS452 Lab 5</h1>
+		<p>To operate, use iop to rotate along the X, Y, and Z axes respectively</p>
+		<p>Use wasd to move the shape along the XY axes</p>
+		<p>Use x/n to scale up/down along the X axis and y/m to scale up/down the Y axis</p>
+    </body>
+</html>
