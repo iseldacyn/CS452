@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+		 <title>Project 2</title>
+
+		 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+		 <script type="text/javascript" src="../Common/initShaders.js"></script>
+		 <script type="text/javascript" src="../Common/MV.js"></script>
+		 <script type="text/javascript" src="obj/bench.js"></script>
+		 <script type="text/javascript" src="obj/streetlamp.js"></script>
+		 <script type="text/javascript" src="proj2.js"></script>
+
+		 <script id="light-vertex-shader" type="x-shader/x-vertex">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="light-fragment-shader" type="x-shader/x-fragment">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="bench-vertex-shader" type="x-shader/x-vertex">
+			 attribute vec4 vertexPosition;
+			 attribute vec4 colorValue;
+			 varying vec4 vColor;
+
+			 uniform mat4 Mc;
+			 uniform mat4 Pc;
+			 void main()
+			 {
+			 	mat4 Ms = mat4( .01, 0, 0, 0,
+								0, .01, 0, 0,
+								0, 0, .01, 0,
+								0, 0, 0, 1.0);
+
+			 	gl_Position = Pc * Mc * Ms * vertexPosition;
+				vColor = colorValue;
+			 }
+		 </script>
+
+		 <script id="bench-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec4 vColor;
+			 void main()
+			 {
+			 	gl_FragColor = vColor;
+			 }
+		 </script>
+
+		 <script id="lamp-vertex-shader" type="x-shader/x-vertex">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="lamp-fragment-shader" type="x-shader/x-fragment">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="bus-vertex-shader" type="x-shader/x-vertex">
+			float pi = 3.1415;
+			attribute vec4 vertexPosition;
+			attribute vec2 textureCoordinate;
+			varying vec2 fTextureCoordinate;
+
+			uniform mat4 Mr;
+			uniform mat4 Mt;
+			uniform mat4 Ms;
+			uniform mat4 Pz;
+			uniform mat4 Mc;
+			uniform mat4 Pc;
+			void main()
+			{
+				gl_Position = Pc * Mc * Mt * Mr * Ms * vertexPosition;
+				fTextureCoordinate = textureCoordinate;
+			}
+		 </script>
+
+		 <script id="bus-fragment-shader" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec2 fTextureCoordinate;
+		 	uniform sampler2D texMap;
+			void main()
+			{
+				gl_FragColor = texture2D( texMap, fTextureCoordinate );
+			}
+		 </script>
+
+		 <script id="stop-vertex-shader" type="x-shader/x-vertex">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="stop-fragment-shader" type="x-shader/x-fragment">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="bus-stop-vertex-shader" type="x-shader/x-vertex">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="bus-stop-fragment-shader" type="x-shader/x-fragment">
+			 void main()
+			 {
+			 }
+		 </script>
+
+		 <script id="street-vertex-shader" type="x-shader/x-vertex">
+			 attribute vec4 vertexPosition;
+			 attribute vec2 textureCoordinate;
+			 varying vec2 fTextureCoordinate;
+
+			 uniform mat4 Mc;
+			 uniform mat4 Pc;
+			 void main()
+			 {
+			 	gl_Position = Pc * Mc * vertexPosition;
+				fTextureCoordinate = textureCoordinate;
+			 }
+		 </script>
+
+		 <script id="street-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec2 fTextureCoordinate;
+			 uniform sampler2D texMap;
+			 void main()
+			 {
+			 	gl_FragColor = texture2D( texMap, fTextureCoordinate );
+			 }
+		 </script>
+
+		 <script id="sidewalk-vertex-shader" type="x-shader/x-vertex">
+			 attribute vec4 vertexPosition;
+			 attribute vec4 colorValue;
+			 varying vec4 vColor;
+
+			 uniform mat4 Mc;
+			 uniform mat4 Pc;
+			 void main()
+			 {
+			 	gl_Position = Pc * Mc * vertexPosition;
+				vColor = colorValue;
+			 }
+		 </script>
+
+		 <script id="sidewalk-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec4 vColor;
+			 void main()
+			 {
+			 	gl_FragColor = vColor;
+			 }
+		 </script>
+	</head>
+	<body onload="init()">
+		<canvas id="gl-canvas" width="1024" height="1024"></canvas>
+	</body>
+</html>
