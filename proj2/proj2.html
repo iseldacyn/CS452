@@ -11,33 +11,53 @@
 		 <script type="text/javascript" src="obj/streetlamp.js"></script>
 		 <script type="text/javascript" src="proj2.js"></script>
 
-		 <script id="light-vertex-shader" type="x-shader/x-vertex">
+		 <script id="point-light-vertex-shader" type="x-shader/x-vertex">
+			 attribute vec4 lightVertexPosition;
+
+			 uniform mat4 Ml;
+			 uniform mat4 Pl;
 			 void main()
 			 {
+			 	gl_Position = Pl * Ml * lightVertexPosition;
 			 }
 		 </script>
 
-		 <script id="light-fragment-shader" type="x-shader/x-fragment">
+		 <script id="point-light-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
 			 void main()
 			 {
+			 	gl_FragColor = vec4( gl_FragColor.z, gl_FragColor.z, gl_FragColor.z, 1.0 );
 			 }
 		 </script>
 
 		 <script id="bench-vertex-shader" type="x-shader/x-vertex">
+			 float pi = radians(180.0);
+			 uniform vec3 p0;
+			 attribute vec3 k;
 			 attribute vec4 vertexPosition;
 			 attribute vec4 colorValue;
 			 varying vec4 vColor;
 
-			 uniform mat4 Mc;
+			 uniform mat4 Mc, Mcit;
 			 uniform mat4 Pc;
 			 void main()
 			 {
-			 	mat4 Ms = mat4( .01, 0, 0, 0,
-								0, .01, 0, 0,
-								0, 0, .01, 0,
+			 	mat4 Ms = mat4( .045, 0, 0, 0,
+								0, .045, 0, 0,
+								0, 0, .045, 0,
 								0, 0, 0, 1.0);
 
-			 	gl_Position = Pc * Mc * Ms * vertexPosition;
+				mat4 Mr = mat4( cos(pi/0.5), 0, -sin(pi/0.5), 0,
+								0, 1, 0, 0,
+								sin(pi/0.5), 0, cos(pi/0.5), 0,
+								0, 0, 0, 1);
+
+				mat4 Mt = mat4( 1, 0, 0, 0,
+								0, 1, 0, 0,
+								0, 0, 1, 0,
+								5, 3, -12, 1);
+
+			 	gl_Position = Pc * Mc * Mt * Mr * Ms * vertexPosition;
 				vColor = colorValue;
 			 }
 		 </script>
@@ -47,33 +67,67 @@
 			 varying vec4 vColor;
 			 void main()
 			 {
-			 	gl_FragColor = vColor;
+			 	vec3 k = vec3( .01, .01, .01 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * vColor.rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+				//gl_FragColor = vColor;
 			 }
 		 </script>
 
 		 <script id="lamp-vertex-shader" type="x-shader/x-vertex">
+			 float pi = radians(180.0);
+			 uniform vec3 p0;
+			 varying vec3 Id;
+			 attribute vec3 k;
+			 attribute vec3 nv;
+			 attribute vec4 vertexPosition;
+			 attribute vec4 colorValue;
+			 varying vec4 vColor;
+
+			 uniform mat4 Mc, Mcit;
+			 uniform mat4, Pc;
 			 void main()
 			 {
+			 	mat4 Ms = mat4( 1.25, 0, 0, 0,
+								0, 1.25, 0, 0,
+								0, 0, 1.25, 0,
+								0, 0, 0, 1.0);
+
+				mat4 Mt = mat4( 1, 0, 0, 0,
+								0, 1, 0, 0,
+								0, 0, 1, 0,
+								-10, 3, -15, 1);
+
+
+			 	gl_Position = Pc * Mc * Mt * Ms * vertexPosition;
+				vColor = colorValue;
 			 }
 		 </script>
 
 		 <script id="lamp-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec4 vColor;
 			 void main()
 			 {
+			 	vec3 k = vec3( .83, .83, .83 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * vColor.rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+				//gl_FragColor = vColor;
 			 }
 		 </script>
 
 		 <script id="bus-vertex-shader" type="x-shader/x-vertex">
-			float pi = 3.1415;
 			attribute vec4 vertexPosition;
 			attribute vec2 textureCoordinate;
 			varying vec2 fTextureCoordinate;
 
-			uniform mat4 Mr;
-			uniform mat4 Mt;
-			uniform mat4 Ms;
+			uniform mat4 Mr, Ms, Mt;
 			uniform mat4 Pz;
-			uniform mat4 Mc;
+			uniform mat4 Mc, Mcit;
 			uniform mat4 Pc;
 			void main()
 			{
@@ -88,31 +142,189 @@
 		 	uniform sampler2D texMap;
 			void main()
 			{
-				gl_FragColor = texture2D( texMap, fTextureCoordinate );
+			 	vec3 k = vec3( .6, .6, .6 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * texture2D( texMap, fTextureCoordinate ).rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+			 	//gl_FragColor.rgb = texture2D( texMap, fTextureCoordinate ).rgb;
 			}
 		 </script>
 
-		 <script id="stop-vertex-shader" type="x-shader/x-vertex">
+		 <script id="stop-pole-vertex-shader" type="x-shader/x-vertex">
+			 float pi = radians(180.0);
+			 attribute vec3 nv;
+			 attribute vec4 vertexPosition;
+			 attribute vec2 textureCoordinate;
+			 varying vec2 fTextureCoordinate;
+
+			 uniform mat4 Mc, Mcit;
+			 uniform mat4 Pc;
 			 void main()
 			 {
+				mat4 Mr = mat4( cos(pi/1.0), 0, -sin(pi/1.0), 0,
+								0, 1, 0, 0,
+								sin(pi/1.0), 0, cos(pi/1.0), 0,
+								0, 0, 0, 1);
+
+			 	mat4 Mt = mat4( 1, 0, 0, 0,
+								0, 1, 0, 0,
+								0, 0, 1, 0,
+								-37, 3, -10, 1); 
+
+			 	gl_Position = Pc * Mc * Mt * Mr * vertexPosition;
+				fTextureCoordinate = textureCoordinate;
 			 }
 		 </script>
 
-		 <script id="stop-fragment-shader" type="x-shader/x-fragment">
+		 <script id="stop-pole-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec2 fTextureCoordinate;
+			 uniform sampler2D texMap;
 			 void main()
 			 {
+			 	vec3 k = vec3( .3, .3, .3 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * texture2D( texMap, fTextureCoordinate ).rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+			 	//gl_FragColor.rgb = texture2D( texMap, fTextureCoordinate ).rgb;
 			 }
 		 </script>
 
-		 <script id="bus-stop-vertex-shader" type="x-shader/x-vertex">
+		 <script id="stop-sign-vertex-shader" type="x-shader/x-vertex">
+			 float pi = radians(180.0);
+			 uniform vec3 p0;
+			 varying vec3 Id;
+			 attribute vec3 nv;
+			 attribute vec4 vertexPosition;
+			 attribute vec2 textureCoordinate;
+			 varying vec2 fTextureCoordinate;
+
+			 uniform mat4 Mc, Mcit;
+			 uniform mat4 Pc;
 			 void main()
 			 {
+				mat4 Ms = mat4( 4, 0, 0, 0,
+								0, 4, 0, 0,
+								0, 0, 4, 0,
+								0, 0, 0, 1);
+
+			 	mat4 Mt = mat4( 1, 0, 0, 0,
+								0, 1, 0, 0,
+								0, 0, 1, 0,
+								-36.74, 10, -8.25, 1); 
+
+				mat4 Mr = mat4( cos(pi/2.0), 0, -sin(pi/2.0), 0,
+								0, 1, 0, 0,
+								sin(pi/2.0), 0, cos(pi/2.0), 0,
+								0, 0, 0, 1);
+
+				Id = vec3( Mt[3][0]-p0.x, Mt[3][1]-p0.y, Mt[3][2]-p0.z );
+
+			 	gl_Position = Pc * Mc * Mt * Mr * Ms * vertexPosition;
+				fTextureCoordinate = textureCoordinate;
 			 }
 		 </script>
 
-		 <script id="bus-stop-fragment-shader" type="x-shader/x-fragment">
+		 <script id="stop-sign-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec3 Id;
+			 varying vec2 fTextureCoordinate;
+			 uniform sampler2D texMap;
 			 void main()
 			 {
+			 	vec3 k = vec3( .9, .9, .9 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * texture2D( texMap, fTextureCoordinate ).rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+			 	//gl_FragColor.rgb = texture2D( texMap, fTextureCoordinate ).rgb;
+			 }
+		 </script>
+
+		 <script id="bus-stop-pole-vertex-shader" type="x-shader/x-vertex">
+			 float pi = radians(180.0);
+			 attribute vec4 vertexPosition;
+			 attribute vec2 textureCoordinate;
+			 varying vec2 fTextureCoordinate;
+
+			 uniform mat4 Mc, Mcit;
+			 uniform mat4 Pc;
+			 void main()
+			 {
+				mat4 Mr = mat4( cos(pi/2.0), 0, -sin(pi/2.0), 0,
+								0, 1, 0, 0,
+								sin(pi/2.0), 0, cos(pi/2.0), 0,
+								0, 0, 0, 1);
+
+			 	mat4 Mt = mat4( 1, 0, 0, 0,
+								0, 1, 0, 0,
+								0, 0, 1, 0,
+								17, 3, -10, 1); 
+
+			 	gl_Position = Pc * Mc * Mt * Mr * vertexPosition;
+				fTextureCoordinate = textureCoordinate;
+		 	}
+		 </script>
+
+		 <script id="bus-stop-pole-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec2 fTextureCoordinate;
+			 uniform sampler2D texMap;
+			 void main()
+			 {
+			 	vec3 k = vec3( .3, .3, .3 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * texture2D( texMap, fTextureCoordinate ).rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+			 	//gl_FragColor.rgb = texture2D( texMap, fTextureCoordinate ).rgb;
+			 }
+		 </script>
+
+		 <script id="bus-stop-sign-vertex-shader" type="x-shader/x-vertex">
+			 float pi = radians(180.0);
+			 attribute vec4 vertexPosition;
+			 attribute vec2 textureCoordinate;
+			 varying vec2 fTextureCoordinate;
+
+			 uniform mat4 Mc;
+			 uniform mat4 Pc;
+			 void main()
+			 {
+				mat4 Ms = mat4( 4, 0, 0, 0,
+								0, 4, 0, 0,
+								9, 0, 4, 0,
+								0, 0, 0, 1);
+
+				mat4 Mr = mat4( cos(pi*2.0), 0, -sin(pi*2.0), 0,
+								0, 1, 0, 0,
+								sin(pi*2.0), 0, cos(pi*2.0), 0,
+								0, 0, 0, 1);
+
+			 	mat4 Mt = mat4( 1, 0, 0, 0,
+								0, 1, 0, 0,
+								0, 0, 1, 0,
+								15.25, 10, -9.74, 1); 
+
+			 	gl_Position = Pc * Mc * Mt * Mr * Ms * vertexPosition;
+				fTextureCoordinate = textureCoordinate;
+		 	}
+		 </script>
+
+		 <script id="bus-stop-sign-fragment-shader" type="x-shader/x-fragment">
+			 precision mediump float;
+			 varying vec2 fTextureCoordinate;
+			 uniform sampler2D texMap;
+			 void main()
+			 {
+			 	vec3 k = vec3( .9, .9, .9 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * texture2D( texMap, fTextureCoordinate ).rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+			 	//gl_FragColor.rgb = texture2D( texMap, fTextureCoordinate ).rgb;
 			 }
 		 </script>
 
@@ -136,7 +348,12 @@
 			 uniform sampler2D texMap;
 			 void main()
 			 {
-			 	gl_FragColor = texture2D( texMap, fTextureCoordinate );
+			 	vec3 k = vec3( .1, .1, .1 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * texture2D( texMap, fTextureCoordinate ).rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+			 	//gl_FragColor.rgb = texture2D( texMap, fTextureCoordinate ).rgb;
 			 }
 		 </script>
 
@@ -159,7 +376,12 @@
 			 varying vec4 vColor;
 			 void main()
 			 {
-			 	gl_FragColor = vColor;
+			 	vec3 k = vec3( .1, .1, .1 );
+			 	vec3 Ia = vec3( .039, .149, .2941 );
+			 	gl_FragColor.rgb = k.rgb * Ia.rgb * vColor.rgb;
+				gl_FragColor.a = 1.0;
+				/* uncomment for no lighting */
+				//gl_FragColor = vColor;
 			 }
 		 </script>
 	</head>
