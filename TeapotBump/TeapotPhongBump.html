@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+            <title>Teapot</title>
+            
+            <script id="vertex-shader" type="x-shader/x-vertex">
+                precision mediump float;
+                attribute vec4 vertexPosition;
+                attribute vec3 nv; // vertex normal
+                //attribute vec3 tv; // vertex tangent
+                varying vec2 fTextureCoordinate;
+                
+                // uniforms:
+                // point light source location
+                uniform vec3 p0;
+                // incident light components
+                uniform vec3 Ia, Id;
+                
+                // Following variables are interpolated
+                // to fragment shader:
+                // attenuated incident light components
+                varying vec3 Ia_pp0, Id_pp0;
+                // unit vectors for source direction and view
+                varying vec3 i, v;
+                
+                mat4 projection = mat4( 1.0, 0.0, 0.0, 0.0,
+                                       0.0, 1.0, 0.0, 0.0,
+                                       0.0, 0.0, -1.0, 0.0,
+                                       0.0, 0.0, 0.0, 1.0);
+                
+                
+                
+                void main() {
+                    gl_PointSize = 1.0;
+                    
+                    // Point light source undergoes attenuation at vertex,
+                    // so first compute this attenuation.
+                    float distance = length( vertexPosition.xyz - p0 );
+                    // (.xyz gets first 3 components,
+                    // length() function gives you length of vector, or norm of vector)
+                    
+                    // Per-vertex transformations done here:
+                    vec3 up = vec3( 0.0, 1.0, 0.0 );
+                    vec3 tv = cross(up,nv);  // Calculate tangent
+                    vec3 bv = cross(nv,tv);  // Calculate binormal
+                    
+                    mat4 TransformEyeToTangent = mat4( tv.x, bv.x, nv.x, 0.0,
+                                                       tv.y, bv.y, nv.y, 0.0,
+                                                       tv.z, bv.z, nv.z, 0.0,
+                                                       0.0, 0.0, 0.0, 1.0);
+                        
+                    vec3 p0TransformedToTangent = (TransformEyeToTangent * vec4( p0.x,p0.y,p0.z,1.0)).xyz;
+                    vec3 vertexPositionTransformedToTangent = (TransformEyeToTangent * vertexPosition).xyz;
+                    
+                        
+                    
+                    // Ambient, diffuse, and specular light attenuated:
+                    Ia_pp0 = Ia / (distance * distance);
+                    Id_pp0 = Id / (distance * distance);
+                    
+                    // Ambient Reflection has no calculation here
+ 
+                    // Diffuse Reflection, only calculate i
+                    i = normalize( p0TransformedToTangent - vertexPositionTransformedToTangent ); // unit vector for light source direction
+                    
+                    
+                    // Specular Reflection, only calculate v
+                    v = normalize(vec3(0.0,0.0,0.0) - vertexPositionTransformedToTangent); // unit vector for view
+                    
+                    // The following bit of code generates texture coordinates
+                    // automatically for the bump mapping using the "Clipspace-based
+                    // texture coordinates" method (refer to the Texture Mapping lecture)
+                    // However, you can create your own texture coordinates in
+                    // the JavaScript file similar to Lab 5 and use those as well.
+                    vec4 outputPosition = projection * vertexPosition;
+                    vec2 clipCoordinate = outputPosition.xy/outputPosition.w;
+                    fTextureCoordinate = 0.5 * (clipCoordinate+1.0);
+                    
+                    gl_Position=projection * vertexPosition;
+                    
+                }
+            </script>
+            
+            <script id="fragment-shader" type="x-shader/x-fragment">
+                precision mediump float;
+                
+                // uniforms:
+                // coefficients for object
+                uniform vec3 ka, kd;
+                
+                // Following variables are interpolated
+                // from vertex shader:
+                // attenuated incident light components
+                varying vec3 Ia_pp0, Id_pp0;
+                // unit vectors for source direction and view
+                varying vec3 i, v;
+                
+                // Final reflected light calculated here
+                vec3 R;
+                
+                uniform sampler2D texMap;
+                varying vec2 fTextureCoordinate;
+                
+                void main() {
+                    // You need to renormalize i, v, and n
+                    // because interpolation
+                    // does not normalize them.
+                    vec3 i_renorm, r_renorm,
+                        v_renorm, n_renorm;
+                    i_renorm = normalize( i );
+                    v_renorm = normalize( v );
+                    
+                    vec3 n_bump = texture2D(texMap,fTextureCoordinate).xyz;
+                    n_bump.x=2.0 * n_bump.x-1.0;
+                    n_bump.y=2.0 * n_bump.y-1.0;
+                    n_bump.z=1.0;
+                    
+                    // reflected light components
+                    vec3 Ra, Rd, Rs;
+                    
+                    // Ambient Reflection
+                    Ra.r = ka.r * Ia_pp0.r;
+                    Ra.g = ka.g * Ia_pp0.g;
+                    Ra.b = ka.b * Ia_pp0.b;
+                    
+                    // Diffuse Reflection, use renormalized i
+                    float costheta = dot( i_renorm, n_bump );
+                    Rd.r = kd.r * Id_pp0.r * max( costheta, 0.0 );
+                    Rd.g = kd.g * Id_pp0.g * max( costheta, 0.0 );
+                    Rd.b = kd.b * Id_pp0.b * max( costheta, 0.0 );
+                    
+                    // Final reflection: sum of ambient, diffuse.
+                    R = clamp( Ra + Rd, 0.0, 1.0);
+
+                    gl_FragColor=vec4( R.r, R.g, R.b, 1.0 );
+                }
+
+            </script>
+            
+            <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+            <script type="text/javascript" src="../Common/initShaders.js"></script>
+            <script type="text/javascript" src="../Common/MV.js"></script>
+            <script type="text/javascript" src="./teapot.js"></script>
+            
+            <script type="text/javascript" src="TeapotPhongBump.js"></script>
+            
+    </head>
+    
+    <body onload = "drawTeapot()">
+        <!-- You are recommended to make the canvas bigger, e.g., 4096 x 4096, but then make sure to scroll over -->
+        <canvas id="gl-canvas" width="4096" height="4096"></canvas><br/>
+        <img hidden id="randomImage" src="./random.jpg"/>
+    </body>
+</html>
+
+

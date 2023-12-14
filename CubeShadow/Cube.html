@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+            <title>Cube</title>
+            
+            <script id="light-vertex-shader" type="x-shader/x-vertex">
+                precision mediump float;
+                attribute vec4 lightVertexPosition;
+                uniform mat4 Ml, Pl;
+                
+                void main() {
+                    gl_Position = Pl * Ml * lightVertexPosition;
+                }
+            </script>
+            
+            <script id="light-fragment-shader" type="x-shader/x-fragment">
+                precision mediump float;
+                
+                void main() {
+                    // gl_FragCoord.z contains z value of depth to each fragment
+                    // This shader renders everything from perspective of light
+                    gl_FragColor=vec4( gl_FragCoord.z, gl_FragCoord.z, gl_FragCoord.z, 1.0);
+                }
+            </script>
+            
+            <script id="view-vertex-shader" type="x-shader/x-vertex">
+                precision mediump float;
+                uniform vec3 p0;
+                uniform vec3 Ia, Id;
+                attribute vec3 k;
+                attribute vec3 nv;
+                attribute vec4 vertexPosition;
+                uniform mat4 M, Mit, Ml, P, Pl;
+                varying vec3 Ia_pp0, Id_pp0;
+                varying vec3 fNormal, i;
+                varying vec3 ka, kd;
+                varying vec4 fVertexPositionToLight;
+                
+                void main() {
+                    gl_Position=P * M * vertexPosition;
+                    
+                    vec3 vertexPositionTransformed = (M * vertexPosition).xyz;
+                    vec3 lightPositionTransformed = (M * vec4(p0.x,p0.y,p0.z,1.0)).xyz;
+                    vec3 nvTransformed = normalize((Mit * vec4(nv.x,nv.y,nv.z,1.0)).xyz);
+                    
+                    float lightDistance = length(lightPositionTransformed-vertexPositionTransformed);
+                    ka = k;
+                    kd = k;
+                    Ia_pp0 = Ia;
+                    Id_pp0 = Id;
+                    fNormal = nvTransformed;
+                    i = normalize( lightPositionTransformed-vertexPositionTransformed );
+                    vec4 vertexPositionToLight = Pl * Ml * vertexPosition;
+                    fVertexPositionToLight = vertexPositionToLight;
+                }
+            </script>
+            
+            <script id="view-fragment-shader" type="x-shader/x-fragment">
+                precision mediump float;
+                varying vec3 ka, kd;
+                varying vec3 Ia_pp0, Id_pp0;
+                varying vec3 fNormal, i;
+                
+                varying vec4 fVertexPositionToLight;
+                uniform sampler2D shadowMap;
+                
+                void main() {
+                    vec3 i_norm = normalize(i);
+                    vec3 n_norm = normalize(fNormal);
+                    float dp = dot(i_norm,n_norm);
+                    vec3 outputColor;
+                    outputColor.r = kd.r * Id_pp0.r * max(dp,.0) + ka.r * Ia_pp0.r;
+                    outputColor.g = kd.g * Id_pp0.g * max(dp,.0) + ka.g * Ia_pp0.g;
+                    outputColor.b = kd.b * Id_pp0.b * max(dp,.0) + ka.b * Ia_pp0.b;
+                    
+                    // d2 get stored in shadowMapCoordinates.z
+                    vec3 clipSpaceCoordinates = fVertexPositionToLight.xyz/fVertexPositionToLight.w;
+                    vec3 shadowMapCoordinates = 0.5 * clipSpaceCoordinates + 0.5;
+                    float d2 = shadowMapCoordinates.z;
+                    
+                    // get d1 from texture map
+                    vec4 depthFromLightInShadowMap = texture2D(shadowMap,shadowMapCoordinates.xy);
+                    float d1 = depthFromLightInShadowMap.z;
+                    
+                    // If d2 > d1, render pixel as being in shadow (i.e., as invisible)
+                    float visibility = 1.0;
+                    if ( d2 - d1 > .06 ) {
+                        visibility = 0.4;
+                    }
+                    gl_FragColor.rgb = outputColor.rgb * visibility;
+                    gl_FragColor.a = 1.0;
+                }
+            </script>
+            <script type="text/javascript" src="../Common/webgl-utils.js"></script>
+            <script type="text/javascript" src="../Common/initShaders.js"></script>
+            <script type="text/javascript" src="../Common/MV.js"></script>
+            <script type="text/javascript" src="Cube.js"></script>
+    </head>    
+    <body onload = "drawCube()">
+        <canvas id="gl-canvas" width="1024" height="1024"></canvas><br/>
+    </body>
+</html>
+
+
